@@ -46,7 +46,9 @@ const posts = [
 ];
 
 export default function Home() {
-  const [materiasFormatadas, setMateriasFormadas] = useState(materias);
+  const [materiasFormatadas, setMateriasFormadas] = useState(() => {
+    return window.innerWidth < 720 ? materias.slice(0, 3) : materias;
+  });
 
   function setMaterias() {
     if (window.innerWidth < 720) {
