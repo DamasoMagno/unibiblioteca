@@ -87,13 +87,13 @@ export default function Home() {
         <ul className="flex flex-col gap-8">
           {posts.map((post) => {
             return (
-              <Link href="/" className="flex flex-col gap-2 border-b border-gray-100 pb-8 last:border-none" key={post.id}>
-                <strong>{post.titulo}</strong>
-                <p className="text-gray-500 leading-8 text-base">{post.descricao}</p>
+              <Link href="/" className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none" key={post.id}>
+                <strong className="text-[18px] text-gray-800">{post.titulo}</strong>
+                <p className="text-gray-500 leading-9 text-base mt-2">{post.descricao}</p>
 
                 <footer className="flex justify-between items-center mt-6">
-                  <span>Matemática</span>
-                  <span>Texto</span>
+                  <span className="text-gray-600 font-medium text-base">por: Italo Fonseca</span>
+                  <span className="text-sm text-gray-600 font-medium">{new Date().toLocaleDateString()}</span>
                 </footer>
               </Link>
             );
