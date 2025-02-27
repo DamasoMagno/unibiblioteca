@@ -1,12 +1,14 @@
+"use client"
 import { Book, Menu } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const materias = [
   "Matemática",
   "Português",
   "História",
   "Geografia",
-  // "Ciências",
+  "Ciências",
 ];
 
 const posts = [
@@ -43,6 +45,24 @@ const posts = [
 ];
 
 export default function Home() {
+  const [materiasFormatadas, setMateriasFormadas] = useState(materias);
+
+  function setMaterias(){
+    if(window.innerWidth < 720){
+      setMateriasFormadas(materias.slice(0, 3))
+    } else {
+      setMateriasFormadas(materias)
+    }
+  }
+
+  useEffect(() => { 
+    window.addEventListener("resize", setMaterias)
+
+    return () => { 
+      window.removeEventListener("resize", setMaterias)
+    }
+  }, []);
+
   return (
     <div className="px-8">
       <header className="max-w-[800px] mx-auto">
@@ -55,7 +75,7 @@ export default function Home() {
           <button className="cursor-pointer justify-center items-center">
             <Menu color="#333" size={20} />
           </button>
-          {materias.map((materia, index) => (
+          {materiasFormatadas.map((materia, index) => (
             <Link href="/" key={index}>
               {materia}
             </Link>
