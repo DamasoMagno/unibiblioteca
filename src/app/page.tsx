@@ -1,4 +1,5 @@
-"use client"
+"use client";
+import { Input } from "@/components/ui/input";
 import { Book, Menu } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -47,20 +48,20 @@ const posts = [
 export default function Home() {
   const [materiasFormatadas, setMateriasFormadas] = useState(materias);
 
-  function setMaterias(){
-    if(window.innerWidth < 720){
-      setMateriasFormadas(materias.slice(0, 3))
+  function setMaterias() {
+    if (window.innerWidth < 720) {
+      setMateriasFormadas(materias.slice(0, 3));
     } else {
-      setMateriasFormadas(materias)
+      setMateriasFormadas(materias);
     }
   }
 
-  useEffect(() => { 
-    window.addEventListener("resize", setMaterias)
+  useEffect(() => {
+    window.addEventListener("resize", setMaterias);
 
-    return () => { 
-      window.removeEventListener("resize", setMaterias)
-    }
+    return () => {
+      window.removeEventListener("resize", setMaterias);
+    };
   }, []);
 
   return (
@@ -83,17 +84,34 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="max-w-[800px] mx-auto mt-16">
+      <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
+        <div className="flex flex-col gap-8">
+          <Input placeholder="Buscar conteudo " />
+          <span className="font-light text-gray-400 text-[14px] text-right">12 posts encontrados</span>
+        </div>
+
         <ul className="flex flex-col gap-8">
           {posts.map((post) => {
             return (
-              <Link href="/" className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none" key={post.id}>
-                <strong className="text-[18px] text-gray-800">{post.titulo}</strong>
-                <p className="text-gray-500 leading-9 text-base mt-2">{post.descricao}</p>
+              <Link
+                href="/"
+                className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none"
+                key={post.id}
+              >
+                <strong className="text-[18px] text-gray-800">
+                  {post.titulo}
+                </strong>
+                <p className="text-gray-500 leading-9 text-base mt-2">
+                  {post.descricao}
+                </p>
 
                 <footer className="flex justify-between items-center mt-6">
-                  <span className="text-gray-600 font-medium text-base">por: Italo Fonseca</span>
-                  <span className="text-sm text-gray-600 font-medium">{new Date().toLocaleDateString()}</span>
+                  <span className="text-gray-600 font-medium text-base">
+                    por: Italo Fonseca
+                  </span>
+                  <span className="text-sm text-gray-600 font-medium">
+                    {new Date().toLocaleDateString()}
+                  </span>
                 </footer>
               </Link>
             );
