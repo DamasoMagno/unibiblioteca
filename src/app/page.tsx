@@ -87,11 +87,11 @@ export default function Home() {
         <ul className="flex flex-col gap-8">
           {posts.map((post) => {
             return (
-              <Link href="/" className="flex flex-col gap-2" key={post.id}>
+              <Link href="/" className="flex flex-col gap-2 border-b border-gray-100 pb-8 last:border-none" key={post.id}>
                 <strong>{post.titulo}</strong>
-                <p className="text-gray-500">{post.descricao}</p>
+                <p className="text-gray-500 leading-8 text-base">{post.descricao}</p>
 
-                <footer className="flex justify-between items-center">
+                <footer className="flex justify-between items-center mt-6">
                   <span>Matemática</span>
                   <span>Texto</span>
                 </footer>
