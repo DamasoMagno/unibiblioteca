@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Book, Menu, X } from "lucide-react";
+import { Book, Menu } from "lucide-react";
 
 const materias = [
   "Matemática",
