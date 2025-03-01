@@ -1,16 +1,9 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Book, Menu } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-const materias = [
-  "Matemática",
-  "Português",
-  "História",
-  "Geografia",
-  "Ciências",
-];
+import Header from "@/components/header";
+import { Input } from "@/components/ui/input";
+
 
 const posts = [
   {
@@ -46,49 +39,9 @@ const posts = [
 ];
 
 export default function Home() {
-  const [materiasFormatadas, setMateriasFormadas] = useState(() => {
-    if(typeof window !== "undefined"){
-      return window.innerWidth < 720 ? materias.slice(0, 3) : materias;
-    } else {
-      return materias;
-    }
-  });
-
-  function setMaterias() {
-    if (window.innerWidth < 720) {
-      setMateriasFormadas(materias.slice(0, 3));
-    } else {
-      setMateriasFormadas(materias);
-    }
-  }
-
-  useEffect(() => {
-    window.addEventListener("resize", setMaterias);
-
-    return () => {
-      window.removeEventListener("resize", setMaterias);
-    };
-  }, []);
-
   return (
     <div className="px-8">
-      <header className="max-w-[800px] mx-auto">
-        <h3 className="flex items-center justify-center gap-2 mt-4 font-bold text-xl">
-          <Book size={16} />
-          Unibiblioteca
-        </h3>
-
-        <nav className="flex gap-8 items-center justify-center mt-8">
-          <button className="cursor-pointer justify-center items-center">
-            <Menu color="#333" size={20} />
-          </button>
-          {materiasFormatadas.map((materia, index) => (
-            <Link href="/" key={index}>
-              {materia}
-            </Link>
-          ))}
-        </nav>
-      </header>
+      <Header />
 
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <div className="flex flex-col gap-8">
