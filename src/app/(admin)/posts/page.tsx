@@ -59,6 +59,7 @@ export default function Home() {
   return (
     <div className="px-8">
       <Header />
+
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <div className="flex flex-col gap-8">
           <Input placeholder="Buscar conteudo " />

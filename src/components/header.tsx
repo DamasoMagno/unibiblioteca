@@ -1,17 +1,27 @@
+"use client";
 import { useState } from "react";
+import { getCookie } from "cookies-next";
 import Link from "next/link";
 import { Book, Menu } from "lucide-react";
+import { removeSession } from "@/actions/auth-actions";
+import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 
-const materias = [
-  "Matemática",
-  "Física",
-  "Química",
-  "História",
-  "Geografia",
-  "Biologia",
-];
+const materias = ["Matemática", "Física", "Química"];
 
 export default function Header() {
+  const userSession = getCookie("user_session");
+  const router = useRouter();
+
+  function navigate() {
+    if (userSession) {
+      removeSession();
+      return router.push("/");
+    }
+
+    router.push("/sign-in");
+  }
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -21,26 +31,36 @@ export default function Header() {
         Unibiblioteca
       </h3>
 
-      <nav className="flex gap-8 items-center justify-center mt-8">
-        <button
-          className="cursor-pointer flex items-center justify-center"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <Menu color="#333" size={24} />
-        </button>
+      <nav className="flex gap-8 items-center justify-between mt-8">
+        <div className="flex items-center gap-6">
+          <button
+            className="cursor-pointer flex items-center justify-center"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <Menu color="#333" size={24} />
+          </button>
 
-        <ul className="flex gap-4">
-          {materias.map((materia, index) => (
-            <Link
-              href="/"
-              key={index}
-              data-last={materias.indexOf(materia) > 2}
-              className="data-[last=true]:hidden min-sm:data-[last=true]:block"
-            >
-              {materia}
-            </Link>
-          ))}
-        </ul>
+          <ul className="flex gap-4">
+            {materias.map((materia, index) => (
+              <Link
+                href="/"
+                key={index}
+                data-last={materias.indexOf(materia) > 1}
+                className="data-[last=true]:hidden min-sm:data-[last=true]:block"
+              >
+                {materia}
+              </Link>
+            ))}
+          </ul>
+        </div>
+
+        <Button
+          variant="ghost"
+          onClick={navigate}
+          className="flex justify-center itens-center gap-2 border text-gray-400 border-gray-400 px-4 py-1 rounded-4xl hover:border-gray-800 hover:text-gray-800 transition-all cursor-pointer"
+        >
+          {userSession ? "Sair" : "Entrar"}
+        </Button>
       </nav>
     </header>
   );
