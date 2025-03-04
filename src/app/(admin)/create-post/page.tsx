@@ -30,7 +30,7 @@ const postSchema = z.object({
   }),
   descricao: z.string().min(3).max(255),
   imagem: z
-    .instanceof(FileList)
+    .any()
     .refine(
       (file) =>
         [
