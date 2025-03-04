@@ -120,8 +120,10 @@ export default function Create() {
 
   async function uploadFile(image: File | undefined) {
     try {
+      if(!image) return;
+
       const form = new FormData();
-      form.append("image", image as unknown as any);
+      form.append("image", image);
 
       const response = await fetch("/api/upload-file", {
         method: "POST",
