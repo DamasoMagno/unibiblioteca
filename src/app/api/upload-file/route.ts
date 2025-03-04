@@ -23,7 +23,10 @@ export async function POST(req: Request) {
     const file = formData.get("image") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "Nenhum arquivo enviado." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Nenhum arquivo enviado." },
+        { status: 400 }
+      );
     }
 
     const fileName = `${Date.now()}-${file.name}`;
@@ -43,7 +46,11 @@ export async function POST(req: Request) {
       message: "Upload realizado com sucesso!",
       url: fileUrl,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: "Erro no upload.", message: error.message }, { status: 500 });
+  } catch (error) {
+    const err = error as Error;
+    return NextResponse.json(
+      { error: "Erro no upload.", message: err.message },
+      { status: 500 }
+    );
   }
 }

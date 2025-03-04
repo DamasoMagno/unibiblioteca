@@ -113,13 +113,15 @@ export default function Create() {
       });
 
       toast.success("Post cadastrado com sucesso.");
-    } catch (error) {}
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async function uploadFile(image: File | undefined) {
     try {
       const form = new FormData();
-      form.append("image", image as any);
+      form.append("image", image as unknown as any);
 
       const response = await fetch("/api/upload-file", {
         method: "POST",
@@ -188,13 +190,13 @@ export default function Create() {
               <p className="text-red-500 text-sm">{errors.video.message}</p>
             )}
           </div>
-          {file && (
+          {/* {file && (
             <img
               src={file}
               alt="Preview"
               className="w-full h-64 object-covers rounded"
             />
-          )}
+          )} */}
           <Controller
             name="imagem"
             control={control}

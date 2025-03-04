@@ -8,8 +8,12 @@ import {
   ROOT_ROUTE,
 } from "@/constants/routes";
 
+async function getCookies(){
+  return await cookies();
+}
+
 export async function createSession(uid: string) {
-  let sessionCookies = await cookies();
+  const sessionCookies = await getCookies();
 
   sessionCookies.set(SESSION_COOKIE_NAME, uid, {
     maxAge: 60 * 60 * 24 * 7,
@@ -20,7 +24,7 @@ export async function createSession(uid: string) {
 }
 
 export async function removeSession() {
-  let sessionCookies = await cookies();
+  const sessionCookies = await getCookies();
   sessionCookies.delete(SESSION_COOKIE_NAME);
 
   redirect(ROOT_ROUTE);

@@ -1,15 +1,6 @@
 "use client";
 import Link from "next/link";
-import {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  query,
-  getDoc,
-  getDocs,
-  getDocsFromCache,
-} from "firebase/firestore";
+import { collection, query, getDocs } from "firebase/firestore";
 
 import Header from "@/components/header";
 import { Input } from "@/components/ui/input";
@@ -74,7 +65,7 @@ export default function Home() {
               <Loader2 className="animate-spin" />
             </div>
           ) : (
-            posts.map((post, index) => {
+            posts.map((post) => {
               return (
                 <Link
                   href={`/post/${post.id}`}

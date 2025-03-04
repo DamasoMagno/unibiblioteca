@@ -11,7 +11,6 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/services/firebase";
 import { FirebaseError } from "firebase/app";
 import toast from "react-hot-toast";
-import { useUserSession } from "@/hooks/useUserSession";
 
 const signInSchema = z.object({
   email: z.string().email({
@@ -23,8 +22,6 @@ const signInSchema = z.object({
 type SignIn = z.infer<typeof signInSchema>;
 
 export default function Create() {
-  const session = useUserSession(null);
-
   const {
     handleSubmit,
     formState: { errors, isSubmitting },

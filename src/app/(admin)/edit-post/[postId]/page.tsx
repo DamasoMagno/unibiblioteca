@@ -45,7 +45,7 @@ export default function Page() {
     }
 
     fetchPost();
-  }, []);
+  }, [params.postId]);
 
   return (
     <div className="px-8">
@@ -86,7 +86,7 @@ export default function Page() {
               {post.descricao}
             </p>
 
-            <Card className="mt-8">
+            {/* <Card className="mt-8">
               <CardContent>
                 <img
                   src={post.imageUrl}
@@ -94,7 +94,7 @@ export default function Page() {
                   className="rounded-sm"
                 />
               </CardContent>
-            </Card>
+            </Card> */}
           </>
         )}
       </div>
