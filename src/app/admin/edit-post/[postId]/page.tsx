@@ -1,32 +1,155 @@
 "use client";
 import { firestore } from "@/services/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Params } from "next/dist/server/request/params";
-import ReactPlayer from "react-player";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { collection, query, getDocs } from "firebase/firestore";
+import { z } from "zod";
+import toast from "react-hot-toast";
 import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface PostParams extends Params {
   postId: string;
 }
 
-interface Post {
+const postSchema = z.object({
+  video: z.string().url(),
+  titulo: z.string().min(3).max(100),
+  category: z.string({
+    message: "Informe uma categoria",
+  }),
+  descricao: z.string().min(3).max(255),
+  imagem: z
+    .any()
+    .refine(
+      (file) =>
+        [
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+          "image/svg+xml",
+          "image/gif",
+          "application/pdf",
+        ].includes(file?.[0].type),
+      {
+        message:
+          "Apenas imagens do tipo PNG, JPEG, JPG, SVG, GIF são permitidas.",
+      }
+    )
+    .optional(),
+});
+
+type Post = z.infer<typeof postSchema>;
+
+interface Category {
   id: string;
-  titulo: string;
-  descricao: string;
-  imageUrl: string;
-  createdAt: Date;
-  video: string;
+  name: string;
 }
 
 export default function Page() {
-  const [post, setPost] = useState<Post | null>(null);
   const params = useParams() as PostParams;
+
+  const [file, setFile] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const {
+    formState: { isSubmitting, errors },
+    handleSubmit,
+    control,
+    watch,
+    register,
+    reset,
+  } = useForm<Post>({
+    resolver: zodResolver(postSchema),
+  });
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const postsCollection = query(collection(firestore, "category"));
+        const querySnapshot = await getDocs(postsCollection);
+
+        setCategories(
+          querySnapshot.docs.map((snapshot) => ({
+            id: snapshot.id,
+            name: snapshot.data().name,
+          }))
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchCategories();
+  }, []);
+
+  async function handleCreateNewPost(data: Post) {
+    try {
+      let imageUrl;
+
+      if (data.imagem) {
+        imageUrl = await uploadFile(data.imagem[0]);
+      }
+
+      await updateDoc(doc(firestore, "appointment", params.postId), {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        imageUrl: imageUrl?.url,
+        video: data.video,
+        category: data.category,
+        createdAt: new Date(),
+      });
+
+      toast.success("Post cadastrado com sucesso.");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function uploadFile(image: File | undefined) {
+    try {
+      if (!image) return;
+
+      const form = new FormData();
+      form.append("image", image);
+
+      const response = await fetch("/api/upload-file", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await response.json();
+      return {
+        url: data.url as string,
+      };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const filePreview = watch("imagem");
+
+  useEffect(() => {
+    if (filePreview?.length && typeof filePreview !== "string") {
+      const formattedFile = filePreview[0];
+      const objectUrl = URL.createObjectURL(formattedFile);
+
+      if (file !== objectUrl) setFile(objectUrl);
+    }
+  }, [filePreview, file]);
 
   useEffect(() => {
     async function fetchPost() {
@@ -35,7 +158,15 @@ export default function Page() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setPost(docSnap.data() as Post);
+          const post = docSnap.data() as Post;
+
+          reset({
+            titulo: post.titulo,
+            video: post.video,
+            category: post.category,
+            descricao: post.descricao,
+            imagem: file ? [file] : undefined,
+          });
         } else {
           console.log("No such document!");
         }
@@ -45,59 +176,69 @@ export default function Page() {
     }
 
     fetchPost();
-  }, [params.postId]);
+  }, [params.postId, reset]);
 
   return (
     <div className="px-8">
-      <div className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
-        {/* Se os dados ainda estão carregando, exibe o Skeleton */}
-        {!post ? (
-          <>
-            {/* Skeleton do título */}
-            <Skeleton className="h-6 w-48 rounded-md" />
+      <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
+        <h3>Cadastrar um conteudo</h3>
 
-            {/* Skeleton do vídeo */}
-            <Skeleton className="w-full aspect-video rounded-md" />
+        <form
+          onSubmit={handleSubmit(handleCreateNewPost)}
+          className="flex flex-col gap-4"
+        >
+          <Select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione uma categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.name}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-            {/* Skeleton da descrição */}
-            <Skeleton className="h-16 w-full rounded-md" />
+          <div>
+            <Input
+              placeholder="Informe o vídeo"
+              type="url"
+              {...register("video")}
+            />
+            {errors.video && (
+              <p className="text-red-500 text-sm">{errors.video.message}</p>
+            )}
+          </div>
 
-            {/* Skeleton da imagem dentro do card */}
-            <Card className="mt-8">
-              <CardContent>
-                <Skeleton className="h-52 w-full rounded-md" />
-              </CardContent>
-            </Card>
-          </>
-        ) : (
-          <>
-            <strong className="text-[18px] text-gray-800">{post.titulo}</strong>
+          <Controller
+            name="imagem"
+            control={control}
+            render={({ field: { onChange } }) => (
+              <Input type="file" onChange={(e) => onChange(e.target.files)} />
+            )}
+          />
+          <div>
+            <Input placeholder="Informe um título" {...register("titulo")} />
+            {errors.titulo && (
+              <p className="text-red-500 text-sm">{errors.titulo.message}</p>
+            )}
+          </div>
 
-            <div className="w-full aspect-video">
-              <ReactPlayer
-                url={post.video}
-                width="100%"
-                height="100%"
-                controls
-              />
-            </div>
-
-            <p className="text-gray-500 leading-9 text-base">
-              {post.descricao}
-            </p>
-
-            {/* <Card className="mt-8">
-              <CardContent>
-                <img
-                  src={post.imageUrl}
-                  alt={post.titulo}
-                  className="rounded-sm"
-                />
-              </CardContent>
-            </Card> */}
-          </>
-        )}
-      </div>
+          <div>
+            <Textarea
+              placeholder="Informe uma descrição"
+              {...register("descricao")}
+            />
+            {errors.descricao && (
+              <p className="text-red-500 text-sm">{errors.descricao.message}</p>
+            )}
+          </div>
+          <Button>
+            {isSubmitting ? <Loader2 className="animate-spin" /> : "Cadastrar"}
+          </Button>
+        </form>
+      </main>
     </div>
   );
 }

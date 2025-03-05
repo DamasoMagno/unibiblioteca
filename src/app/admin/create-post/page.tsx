@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import Header from "@/components/header";
 
 const postSchema = z.object({
   video: z.string().url(),
@@ -148,12 +147,10 @@ export default function Create() {
 
       if (file !== objectUrl) setFile(objectUrl);
     }
-  }, [filePreview]);
+  }, [filePreview, file]);
 
   return (
     <div className="px-8">
-      <Header />
-
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <h3>Cadastrar um conteudo</h3>
 

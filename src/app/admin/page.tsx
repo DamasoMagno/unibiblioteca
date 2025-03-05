@@ -64,7 +64,7 @@ export default function Home() {
             ? Array.from({ length: 2 }).map((_, i) => <PostSkeleton key={i} />)
             : posts.map((post) => (
                 <Link
-                  href={`/post/${post.id}`}
+                  href={`/admin/edit-post/${post.id}`}
                   className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none"
                   key={post.id}
                 >
