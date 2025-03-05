@@ -1,21 +1,29 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
 import { Book, Menu } from "lucide-react";
 import { removeSession } from "@/actions/auth-actions";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
 const materias = ["Matemática", "Física", "Química"];
 
 export default function Header() {
-  const userSession = getCookie("user_session");
+  const path = usePathname();
   const router = useRouter();
+  const [userSession, setUserSession] = useState<string | null>(null);
+
+  const isAdminRoute = path.includes("/admin");
+
+  useEffect(() => {
+    setUserSession(getCookie("user_session") as string | null);
+  }, []);
 
   function navigate() {
     if (userSession) {
       removeSession();
+      setUserSession(null);
       return router.push("/");
     }
 
@@ -54,13 +62,24 @@ export default function Header() {
           </ul>
         </div>
 
-        <Button
-          variant="ghost"
-          onClick={navigate}
-          className="flex justify-center itens-center gap-2 border text-gray-400 border-gray-400 px-4 py-1 rounded-4xl hover:border-gray-800 hover:text-gray-800 transition-all cursor-pointer"
-        >
-          {userSession ? "Sair" : "Entrar"}
-        </Button>
+        <div className="flex gap-4">
+          {isAdminRoute && userSession && (
+            <Link
+              href="/admin/create-post"
+              className="flex justify-center itens-center gap-2 border text-white border-transparent bg-gray-800 px-4 py-1 rounded-4xl hover:border-gray-800 hover:bg-transparent hover:text-gray-800 transition-all cursor-pointer"
+            >
+              Criar novo post
+            </Link>
+          )}
+
+          <Button
+            variant="ghost"
+            onClick={navigate}
+            className="flex justify-center itens-center gap-2 border text-gray-400 border-gray-400 px-4 py-1 rounded-4xl hover:border-gray-800 hover:text-gray-800 transition-all cursor-pointer"
+          >
+            <span>{userSession ? "Sair" : "Entrar"}</span>
+          </Button>
+        </div>
       </nav>
     </header>
   );

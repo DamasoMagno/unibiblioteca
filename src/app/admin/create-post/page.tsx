@@ -1,9 +1,8 @@
 "use client";
-import { Book, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { collection, addDoc, query, getDocs } from "firebase/firestore";
-import { removeSession } from '@/actions/auth-actions';
 
 import { z } from "zod";
 import {
@@ -21,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import Header from "@/components/header";
 
 const postSchema = z.object({
   video: z.string().url(),
@@ -152,15 +152,7 @@ export default function Create() {
 
   return (
     <div className="px-8">
-      <header className="max-w-[800px] mx-auto">
-        <h3 className="flex items-center justify-center gap-2 mt-4 font-bold text-xl">
-          <Book size={16} />
-          Unibiblioteca
-        </h3>
-        <Button onClick={removeSession}>
-          Sair
-        </Button>
-      </header>
+      <Header />
 
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <h3>Cadastrar um conteudo</h3>

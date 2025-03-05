@@ -6,7 +6,7 @@ import Header from "@/components/header";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { firestore } from "@/services/firebase";
-import { Loader2 } from "lucide-react";
+import { PostSkeleton } from "@/components/post-skeleton";
 
 interface Post {
   id: string;
@@ -59,37 +59,33 @@ export default function Home() {
         </div>
 
         <ul className="flex flex-col gap-8">
-          {isLoading ? (
-            <div className="w-full h-[320px] flex justify-center items-center">
-              <Loader2 className="animate-spin" />
-            </div>
-          ) : (
-            posts.map((post) => {
-              return (
-                <Link
-                  href={`/post/${post.id}`}
-                  className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none"
-                  key={post.id}
-                >
-                  <strong className="text-[18px] text-gray-800">
-                    {post.titulo}
-                  </strong>
-                  <p className="text-gray-500 leading-9 text-base mt-2">
-                    {post.descricao}
-                  </p>
+          {isLoading
+            ? Array.from({ length: 2 }).map((_, i) => <PostSkeleton key={i} />)
+            : posts.map((post) => {
+                return (
+                  <Link
+                    href={`/post/${post.id}`}
+                    className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none"
+                    key={post.id}
+                  >
+                    <strong className="text-[18px] text-gray-800">
+                      {post.titulo}
+                    </strong>
+                    <p className="text-gray-500 leading-9 text-base mt-2">
+                      {post.descricao}
+                    </p>
 
-                  <footer className="flex justify-between items-center mt-6">
-                    <span className="text-gray-600 font-medium text-base">
-                      por: Italo Fonseca
-                    </span>
-                    <span className="text-sm text-gray-600 font-medium">
-                      {new Date().toLocaleDateString()}
-                    </span>
-                  </footer>
-                </Link>
-              );
-            })
-          )}
+                    <footer className="flex justify-between items-center mt-6">
+                      <span className="text-gray-600 font-medium text-base">
+                        por: Italo Fonseca
+                      </span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        {new Date().toLocaleDateString()}
+                      </span>
+                    </footer>
+                  </Link>
+                );
+              })}
         </ul>
       </main>
     </div>
