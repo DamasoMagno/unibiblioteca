@@ -77,7 +77,7 @@ export default function Create() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const postsCollection = query(collection(firestore, "category"));
+        const postsCollection = query(collection(firestore, "subject"));
         const querySnapshot = await getDocs(postsCollection);
 
         setCategories(
@@ -102,24 +102,27 @@ export default function Create() {
         imageUrl = await uploadFile(data.imagem[0]);
       }
 
-      await addDoc(collection(firestore, "appointment"), {
-        titulo: data.titulo,
-        descricao: data.descricao,
-        imageUrl: imageUrl?.url,
+      const post = {
         video: data.video,
+        titulo: data.titulo,
         category: data.category,
+        descricao: data.descricao,
+        imagem: imageUrl?.url,
         createdAt: new Date(),
-      });
+        ranking: 0,
+      };
+
+      await addDoc(collection(firestore, "post"), post);
 
       toast.success("Post cadastrado com sucesso.");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   async function uploadFile(image: File | undefined) {
     try {
-      if(!image) return;
+      if (!image) return;
 
       const form = new FormData();
       form.append("image", image);

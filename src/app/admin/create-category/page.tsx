@@ -32,7 +32,7 @@ export default function Create() {
     try {
       setCreatingPost(true);
 
-      await addDoc(collection(firestore, "category"), {
+      await addDoc(collection(firestore, "subject"), {
         name: data.name,
         createdAt: new Date(),
       });
