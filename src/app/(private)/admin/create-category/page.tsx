@@ -3,7 +3,9 @@ import { Book, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { collection, addDoc } from "firebase/firestore";
+import {} from "next"
 import { z } from "zod";
+import { redirect } from "next/navigation";
 
 import { firestore } from "@/services/firebase";
 
@@ -11,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import toast from "react-hot-toast";
+
 
 const postSchema = z.object({
   name: z.string().min(3).max(100),
@@ -38,6 +41,7 @@ export default function Create() {
       });
 
       toast.success("Post cadastrado com sucesso.");
+      redirect("/admin/subjects")
     } finally {
       setCreatingPost(false);
     }

@@ -1,35 +1,32 @@
 "use client";
+import Link from "next/link";
 import { collection, query, getDocs } from "firebase/firestore";
 
-import Header from "@/components/header";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { firestore } from "@/services/firebase";
 import { PostSkeleton } from "@/components/post-skeleton";
+import Header from "@/components/header";
 
-interface SuggestionProps {
+interface SubjectProps {
   id: string;
-  title: string;
-  description: string;
-  createdAt: Date;
+  name: string;
 }
 
-export default function Posts() {
-  const [suggestions, setSuggestions] = useState<SuggestionProps[]>([]);
+export default function Categories() {
+  const [subjects, setSubjects] = useState<SubjectProps[]>([]);
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const postsCollection = query(collection(firestore, "post"));
-        const querySnapshot = await getDocs(postsCollection);
+        const subjectsCollection = query(collection(firestore, "subject"));
+        const querySnapshot = await getDocs(subjectsCollection);
 
-        setSuggestions(
+        setSubjects(
           querySnapshot.docs.map((snapshot) => ({
             id: snapshot.id,
-            title: snapshot.data().title,
-            description: snapshot.data().description,
-            createdAt: snapshot.data().createdAt,
+            name: snapshot.data().name,
           }))
         );
       } catch (error) {
@@ -43,29 +40,37 @@ export default function Posts() {
   }, []);
 
   return (
-    <div className="px-8">
+    <div className="px-8 w-full">
       <Header />
 
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
+        <Link
+          href="/admin/create-category"
+          className="flex justify-center itens-center gap-2 border text-white border-transparent bg-gray-800 px-4 py-1 rounded-4xl hover:border-gray-800 hover:bg-transparent hover:text-gray-800 transition-all cursor-pointer w-[160px] self-end"
+        >
+          Cadastrar matéria
+        </Link>
+
         <div className="flex flex-col gap-8">
-          <Input placeholder="Buscar conteudo " />
+          <Input placeholder="Buscar matéria" />
+          <span className="font-light text-gray-400 text-[14px] text-right">
+            {subjects.length} matérias
+          </span>
         </div>
 
         <ul className="flex flex-col gap-8">
           {isLoading
             ? Array.from({ length: 2 }).map((_, i) => <PostSkeleton key={i} />)
-            : suggestions.map((suggestion) => (
-                <li
+            : subjects.map((post) => (
+                <Link
+                  href={`/admin/edit-post/${post.id}`}
                   className="flex flex-col gap-2 border-b border-gray-100/50 pb-8 last:border-none"
-                  key={suggestion.id}
+                  key={post.id}
                 >
                   <strong className="text-[18px] text-gray-800">
-                    {suggestion.title}
+                    {post.name}
                   </strong>
-                  <p className="text-gray-500 leading-9 text-base mt-2">
-                    {suggestion.description}
-                  </p>
-                </li>
+                </Link>
               ))}
         </ul>
       </main>

@@ -1,10 +1,15 @@
 "use client";
+import { firestore } from "@/services/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { Params } from "next/dist/server/request/params";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, addDoc, query, getDocs } from "firebase/firestore";
-
+import { collection, query, getDocs } from "firebase/firestore";
 import { z } from "zod";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -12,23 +17,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { firestore } from "@/services/firebase";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+interface PostParams extends Params {
+  postId: string;
+}
 
 const postSchema = z.object({
   video: z.string().url(),
-  titulo: z.string().min(3).max(100),
-  category: z.string({
+  title: z.string().min(3).max(100),
+  subject: z.string({
     message: "Informe uma categoria",
   }),
-  descricao: z.string().min(3).max(255),
-  imagem: z
+  description: z.string().min(3).max(255),
+  image: z
     .any()
     .refine(
       (file) =>
@@ -55,9 +59,11 @@ interface Category {
   name: string;
 }
 
-export default function Create() {
+export default function Page() {
+  const params = useParams() as PostParams;
+
   const [file, setFile] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [subjects, setSubjects] = useState<Category[]>([]);
 
   const {
     formState: { isSubmitting, errors },
@@ -65,22 +71,39 @@ export default function Create() {
     control,
     watch,
     register,
+    reset,
   } = useForm<Post>({
     resolver: zodResolver(postSchema),
-    defaultValues: {
-      titulo: "",
-      descricao: "",
-      category: "",
-    },
   });
 
   useEffect(() => {
-    async function fetchPosts() {
+    async function fetchPost() {
+      try {
+        const docRef = doc(firestore, "post", params.postId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          console.log("Post não encontrado");
+          return;
+        }
+
+        const post = docSnap.data() as Post;
+        reset(post);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchPost();
+  }, [params.postId]);
+
+  useEffect(() => {
+    async function fetchCategories() {
       try {
         const postsCollection = query(collection(firestore, "subject"));
         const querySnapshot = await getDocs(postsCollection);
 
-        setCategories(
+        setSubjects(
           querySnapshot.docs.map((snapshot) => ({
             id: snapshot.id,
             name: snapshot.data().name,
@@ -91,28 +114,25 @@ export default function Create() {
       }
     }
 
-    fetchPosts();
+    fetchCategories();
   }, []);
 
   async function handleCreateNewPost(data: Post) {
     try {
       let imageUrl;
 
-      if (data.imagem) {
-        imageUrl = await uploadFile(data.imagem[0]);
+      if (data.image) {
+        imageUrl = await uploadFile(data.image[0]);
       }
 
-      const post = {
+      await updateDoc(doc(firestore, "appointment", params.postId), {
+        title: data.title,
+        description: data.description,
+        imageUrl: imageUrl?.url,
         video: data.video,
-        titulo: data.titulo,
-        category: data.category,
-        descricao: data.descricao,
-        imagem: imageUrl?.url,
+        category: data.subject,
         createdAt: new Date(),
-        ranking: 0,
-      };
-
-      await addDoc(collection(firestore, "post"), post);
+      });
 
       toast.success("Post cadastrado com sucesso.");
     } catch (error) {
@@ -141,19 +161,19 @@ export default function Create() {
     }
   }
 
-  const filePreview = watch("imagem");
+  const filePreview = watch("image");
 
   useEffect(() => {
     if (filePreview?.length && typeof filePreview !== "string") {
       const formattedFile = filePreview[0];
       const objectUrl = URL.createObjectURL(formattedFile);
 
-      if (file !== objectUrl) setFile(objectUrl);
+      setFile(objectUrl);
     }
-  }, [filePreview, file]);
+  }, [filePreview]);
 
   return (
-    <div className="px-8">
+    <div className="px-8 border border-red-500 w-full h-screen">
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <h3>Cadastrar um conteudo</h3>
 
@@ -161,18 +181,26 @@ export default function Create() {
           onSubmit={handleSubmit(handleCreateNewPost)}
           className="flex flex-col gap-4"
         >
-          <Select>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.name}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Controller
+            control={control}
+            name="subject"
+            render={({ field }) => {
+              return (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.name}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              );
+            }}
+          />
 
           <div>
             <Input
@@ -184,34 +212,30 @@ export default function Create() {
               <p className="text-red-500 text-sm">{errors.video.message}</p>
             )}
           </div>
-          {/* {file && (
-            <img
-              src={file}
-              alt="Preview"
-              className="w-full h-64 object-covers rounded"
-            />
-          )} */}
+
           <Controller
-            name="imagem"
+            name="image"
             control={control}
             render={({ field: { onChange } }) => (
               <Input type="file" onChange={(e) => onChange(e.target.files)} />
             )}
           />
           <div>
-            <Input placeholder="Informe um título" {...register("titulo")} />
-            {errors.titulo && (
-              <p className="text-red-500 text-sm">{errors.titulo.message}</p>
+            <Input placeholder="Informe um título" {...register("title")} />
+            {errors.title && (
+              <p className="text-red-500 text-sm">{errors.title.message}</p>
             )}
           </div>
 
           <div>
             <Textarea
               placeholder="Informe uma descrição"
-              {...register("descricao")}
+              {...register("description")}
             />
-            {errors.descricao && (
-              <p className="text-red-500 text-sm">{errors.descricao.message}</p>
+            {errors.description && (
+              <p className="text-red-500 text-sm">
+                {errors.description.message}
+              </p>
             )}
           </div>
           <Button>

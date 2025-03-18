@@ -48,13 +48,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="px-8">
+    <div className="px-8 w-full">
       <Header />
       <main className="max-w-[800px] mx-auto mt-16 flex flex-col gap-4">
         <div className="flex flex-col gap-8">
           <Input placeholder="Buscar conteudo " />
           <span className="font-light text-gray-400 text-[14px] text-right">
-            12 posts encontrados
+            {posts.length} posts encontrados
           </span>
         </div>
 

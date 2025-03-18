@@ -1,15 +1,10 @@
 "use client";
-import { firestore } from "@/services/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { Params } from "next/dist/server/request/params";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, addDoc, query, getDocs } from "firebase/firestore";
+
 import { z } from "zod";
-import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -17,22 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
-interface PostParams extends Params {
-  postId: string;
-}
+import { firestore } from "@/services/firebase";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const postSchema = z.object({
   video: z.string().url(),
-  titulo: z.string().min(3).max(100),
-  category: z.string({
+  title: z.string().min(3).max(100),
+  subject: z.string({
     message: "Informe uma categoria",
   }),
-  descricao: z.string().min(3).max(255),
-  imagem: z
+  description: z.string().min(3).max(255),
+  image: z
     .any()
     .refine(
       (file) =>
@@ -59,9 +55,7 @@ interface Category {
   name: string;
 }
 
-export default function Page() {
-  const params = useParams() as PostParams;
-
+export default function Create() {
   const [file, setFile] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -71,15 +65,19 @@ export default function Page() {
     control,
     watch,
     register,
-    reset,
   } = useForm<Post>({
     resolver: zodResolver(postSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      subject: "",
+    },
   });
 
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchPosts() {
       try {
-        const postsCollection = query(collection(firestore, "category"));
+        const postsCollection = query(collection(firestore, "subject"));
         const querySnapshot = await getDocs(postsCollection);
 
         setCategories(
@@ -93,25 +91,28 @@ export default function Page() {
       }
     }
 
-    fetchCategories();
+    fetchPosts();
   }, []);
 
   async function handleCreateNewPost(data: Post) {
     try {
       let imageUrl;
 
-      if (data.imagem) {
-        imageUrl = await uploadFile(data.imagem[0]);
+      if (data.image) {
+        imageUrl = await uploadFile(data.image[0]);
       }
 
-      await updateDoc(doc(firestore, "appointment", params.postId), {
-        titulo: data.titulo,
-        descricao: data.descricao,
-        imageUrl: imageUrl?.url,
+      const post = {
         video: data.video,
-        category: data.category,
+        title: data.title,
+        subject: data.subject,
+        description: data.description,
+        image: imageUrl?.url,
         createdAt: new Date(),
-      });
+        ranking: 0,
+      };
+
+      await addDoc(collection(firestore, "post"), post);
 
       toast.success("Post cadastrado com sucesso.");
     } catch (error) {
@@ -140,43 +141,16 @@ export default function Page() {
     }
   }
 
-  const filePreview = watch("imagem");
+  const filePreview = watch("image");
 
   useEffect(() => {
     if (filePreview?.length && typeof filePreview !== "string") {
       const formattedFile = filePreview[0];
       const objectUrl = URL.createObjectURL(formattedFile);
 
-      if (file !== objectUrl) setFile(objectUrl);
+      setFile(objectUrl);
     }
-  }, [filePreview, file]);
-
-  useEffect(() => {
-    async function fetchPost() {
-      try {
-        const docRef = doc(firestore, "appointment", params.postId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const post = docSnap.data() as Post;
-
-          reset({
-            titulo: post.titulo,
-            video: post.video,
-            category: post.category,
-            descricao: post.descricao,
-            imagem: file ? [file] : undefined,
-          });
-        } else {
-          console.log("No such document!");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    fetchPost();
-  }, [params.postId, reset]);
+  }, [filePreview]);
 
   return (
     <div className="px-8">
@@ -187,18 +161,26 @@ export default function Page() {
           onSubmit={handleSubmit(handleCreateNewPost)}
           className="flex flex-col gap-4"
         >
-          <Select>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.name}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Controller
+            control={control}
+            name="subject"
+            render={({ field }) => {
+              return (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.name}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              );
+            }}
+          />
 
           <div>
             <Input
@@ -210,28 +192,36 @@ export default function Page() {
               <p className="text-red-500 text-sm">{errors.video.message}</p>
             )}
           </div>
-
+          {file && (
+            <img
+              src={file}
+              alt="Preview"
+              className="w-full h-128 object-cover rounded"
+            />
+          )}
           <Controller
-            name="imagem"
+            name="image"
             control={control}
             render={({ field: { onChange } }) => (
               <Input type="file" onChange={(e) => onChange(e.target.files)} />
             )}
           />
           <div>
-            <Input placeholder="Informe um título" {...register("titulo")} />
-            {errors.titulo && (
-              <p className="text-red-500 text-sm">{errors.titulo.message}</p>
+            <Input placeholder="Informe um título" {...register("title")} />
+            {errors.title && (
+              <p className="text-red-500 text-sm">{errors.title.message}</p>
             )}
           </div>
 
           <div>
             <Textarea
               placeholder="Informe uma descrição"
-              {...register("descricao")}
+              {...register("description")}
             />
-            {errors.descricao && (
-              <p className="text-red-500 text-sm">{errors.descricao.message}</p>
+            {errors.description && (
+              <p className="text-red-500 text-sm">
+                {errors.description.message}
+              </p>
             )}
           </div>
           <Button>
