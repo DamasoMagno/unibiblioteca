@@ -10,9 +10,9 @@ import { PostSkeleton } from "@/components/post-skeleton";
 
 interface Post {
   id: string;
-  titulo: string;
-  descricao: string;
-  imageUrl: string;
+  title: string;
+  description: string;
+  image: string;
   createdAt: Date;
   video: string;
 }
@@ -24,15 +24,15 @@ export default function Home() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const postsCollection = query(collection(firestore, "appointment"));
+        const postsCollection = query(collection(firestore, "post"));
         const querySnapshot = await getDocs(postsCollection);
 
         setPosts(
           querySnapshot.docs.map((snapshot) => ({
             id: snapshot.id,
-            titulo: snapshot.data().titulo,
-            descricao: snapshot.data().descricao,
-            imageUrl: snapshot.data().imageUrl,
+            title: snapshot.data().title,
+            description: snapshot.data().description,
+            image: snapshot.data().image,
             createdAt: snapshot.data().createdAt,
             video: snapshot.data().video,
           }))
@@ -69,10 +69,10 @@ export default function Home() {
                     key={post.id}
                   >
                     <strong className="text-[18px] text-gray-800">
-                      {post.titulo}
+                      {post.title}
                     </strong>
                     <p className="text-gray-500 leading-9 text-base mt-2">
-                      {post.descricao}
+                      {post.description}
                     </p>
 
                     <footer className="flex justify-between items-center mt-6">
