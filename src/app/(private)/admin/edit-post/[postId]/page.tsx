@@ -62,14 +62,13 @@ interface Category {
 export default function Page() {
   const params = useParams() as PostParams;
 
-  const [file, setFile] = useState("");
+  // const [file, setFile] = useState("");
   const [subjects, setSubjects] = useState<Category[]>([]);
 
   const {
     formState: { isSubmitting, errors },
     handleSubmit,
     control,
-    watch,
     register,
     reset,
   } = useForm<Post>({
@@ -95,7 +94,7 @@ export default function Page() {
     }
 
     fetchPost();
-  }, [params.postId]);
+  }, [params.postId, reset]);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -161,16 +160,16 @@ export default function Page() {
     }
   }
 
-  const filePreview = watch("image");
+  // const filePreview = watch("image");
 
-  useEffect(() => {
-    if (filePreview?.length && typeof filePreview !== "string") {
-      const formattedFile = filePreview[0];
-      const objectUrl = URL.createObjectURL(formattedFile);
+  // useEffect(() => {
+  //   if (filePreview?.length && typeof filePreview !== "string") {
+  //     const formattedFile = filePreview[0];
+  //     const objectUrl = URL.createObjectURL(formattedFile);
 
-      setFile(objectUrl);
-    }
-  }, [filePreview]);
+  //     setFile(objectUrl);
+  //   }
+  // }, [filePreview]);
 
   return (
     <div className="px-8 border border-red-500 w-full h-screen">

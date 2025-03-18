@@ -19,7 +19,6 @@ interface SubjectProps {
 export default function Header() {
   const path = usePathname();
   const router = useRouter();
-  const [isLoading, setLoading] = useState(true);
   const [userSession, setUserSession] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<SubjectProps[]>([]);
 
@@ -39,8 +38,6 @@ export default function Header() {
         );
       } catch (error) {
         console.log(error);
-      } finally {
-        setLoading(false);
       }
     }
 

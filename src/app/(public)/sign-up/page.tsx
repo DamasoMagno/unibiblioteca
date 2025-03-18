@@ -2,14 +2,12 @@
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSession } from "@/actions/auth-actions";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/services/firebase";

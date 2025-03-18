@@ -7,8 +7,8 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getIdToken, signInWithEmailAndPassword } from "firebase/auth";
-import { app, auth } from "@/services/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/services/firebase";
 import { FirebaseError } from "firebase/app";
 import toast from "react-hot-toast";
 
